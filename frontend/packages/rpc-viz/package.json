@@ -1,0 +1,14 @@
+{
+  "name": "rpc-viz",
+  "version": "0.0.0",
+  "description": "RPC visualization utility",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Garrick Fernandez",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.116.1"
+  }
+}

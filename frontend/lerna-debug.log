@@ -1,0 +1,13 @@
+0 silly argv {
+0 silly argv   _: [ 'add' ],
+0 silly argv   globs: [ 'packages/client' ],
+0 silly argv   lernaVersion: '3.21.0',
+0 silly argv   '$0': '../../../../.npm/_npx/42149/bin/lerna',
+0 silly argv   pkg: 'packages/rpc-viz'
+0 silly argv }
+1 notice cli v3.21.0
+2 verbose rootPath /Users/garrick/code/rpcboard/frontend
+3 error Error: exited with error code: 128
+3 error     at ChildProcess.<anonymous> (/Users/garrick/.npm/_npx/42149/lib/node_modules/lerna/node_modules/@evocateur/pacote/lib/util/finished.js:12:19)
+3 error     at ChildProcess.emit (events.js:223:5)
+3 error     at maybeClose (internal/child_process.js:1021:16)
