@@ -1,0 +1,14 @@
+{
+  "columns": ["source_ts_start", "source_ts_end", "dest_ts_start", "dest_ts_end", "source", "dest", "type", "tag", "metadata"],
+  "data": [
+    [1],
+    [2],
+    [3],
+    [4],
+    ["A"],
+    ["B"],
+    ["request"],
+    ["hello"],
+    [{"message": "hello world"}]
+  ]
+}
