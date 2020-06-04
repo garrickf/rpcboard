@@ -1,0 +1,131 @@
+D0603 22:32:52.970537000 4393930176 ev_posix.cc:174]                   Using polling engine: poll
+D0603 22:32:52.970597000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "grpclb"
+D0603 22:32:52.970603000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "cds_experimental"
+D0603 22:32:52.970606000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "eds_experimental"
+D0603 22:32:52.970609000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "lrs_experimental"
+D0603 22:32:52.970612000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "priority_experimental"
+D0603 22:32:52.970616000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "weighted_target_experimental"
+D0603 22:32:52.970620000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "xds_routing_experimental"
+D0603 22:32:52.970624000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "pick_first"
+D0603 22:32:52.970628000 4393930176 lb_policy_registry.cc:38]          registering LB policy factory for "round_robin"
+D0603 22:32:52.970632000 4393930176 dns_resolver_ares.cc:503]          Using ares dns resolver
+I0603 22:33:21.121393000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state IDLE -> WRITING [TRANSPORT_FLOW_CONTROL]
+I0603 22:33:21.121406000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING -> WRITING+MORE [INITIAL_WRITE]
+I0603 22:33:21.121429000 123145523970048 chttp2_transport.cc:1849]     perform_transport_op[t=0x7fb09b80ee00]: START_CONNECTIVITY_WATCH:watcher=0x7fb09b406470:from=IDLE SET_ACCEPT_STREAM:0x1044da7f0(0x7fb09b402ec8,...)
+I0603 22:33:21.121450000 123145523970048 writing.cc:125]               SERVER: Ping sent [ipv6:[::1]:59929]: 2/2
+I0603 22:33:21.121455000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING+MORE -> WRITING [begin write in current thread]
+I0603 22:33:21.121474000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING -> IDLE [finish writing]
+I0603 22:33:21.121481000 123145523970048 chttp2_transport.cc:2629]     ipv6:[::1]:59929: Start BDP ping err="No Error"
+I0603 22:33:21.121509000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59929: got setting ENABLE_PUSH = 0
+I0603 22:33:21.121515000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59929: got setting MAX_CONCURRENT_STREAMS = 0
+I0603 22:33:21.121518000 123145523970048 frame_settings.cc:224]        0x7fb09b80ee00[svr] adding 4128769 for initial_window change
+I0603 22:33:21.121521000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59929: got setting INITIAL_WINDOW_SIZE = 4194304
+I0603 22:33:21.121524000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59929: got setting MAX_FRAME_SIZE = 4194304
+I0603 22:33:21.121527000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59929: got setting MAX_HEADER_LIST_SIZE = 8192
+I0603 22:33:21.121529000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59929: got setting GRPC_ALLOW_TRUE_BINARY_METADATA = 1
+I0603 22:33:21.121534000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state IDLE -> WRITING [PING_RESPONSE]
+I0603 22:33:21.122008000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING -> WRITING [begin write in current thread]
+I0603 22:33:21.122028000 123145523970048 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING -> IDLE [finish writing]
+I0603 22:33:21.122501000 123145523970048 parsing.cc:681]               parsing initial_metadata
+I0603 22:33:21.122515000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :scheme: 68 74 74 70 'http'
+I0603 22:33:21.122520000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :method: 50 4f 53 54 'POST'
+I0603 22:33:21.122530000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :authority: 6c 6f 63 61 6c 68 6f 73 74 3a 35 30 30 35 31 'localhost:50051'
+I0603 22:33:21.122538000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :path: 2f 68 65 6c 6c 6f 57 6f 72 6c 64 2e 47 72 65 65 74 65 72 2f 73 61 79 48 65 6c 6c 6f '/helloWorld.Greeter/sayHello'
+I0603 22:33:21.122543000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: te: 74 72 61 69 6c 65 72 73 'trailers'
+I0603 22:33:21.122551000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: content-type: 61 70 70 6c 69 63 61 74 69 6f 6e 2f 67 72 70 63 'application/grpc'
+I0603 22:33:21.122557000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: user-agent: 67 72 70 63 2d 70 79 74 68 6f 6e 2f 31 2e 32 39 2e 30 20 67 72 70 63 2d 63 2f 31 30 2e 30 2e 30 20 28 6f 73 78 3b 20 63 68 74 74 70 32 29 'grpc-python/1.29.0 grpc-c/10.0.0 (osx; chttp2)'
+I0603 22:33:21.122562000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: grpc-accept-encoding: 69 64 65 6e 74 69 74 79 2c 64 65 66 6c 61 74 65 2c 67 7a 69 70 'identity,deflate,gzip'
+I0603 22:33:21.122567000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: accept-encoding: 69 64 65 6e 74 69 74 79 2c 67 7a 69 70 'identity,gzip'
+I0603 22:33:21.122571000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: grpc-timeout: 31 30 53 '10S'
+I0603 22:33:21.122585000 123145523970048 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb09b82ec40]:  RECV_INITIAL_METADATA
+I0603 22:33:21.122593000 123145523970048 chttp2_transport.cc:1360]     perform_stream_op_locked:  RECV_INITIAL_METADATA; on_complete = 0x0
+I0603 22:33:21.122606000 123145523970048 chttp2_transport.cc:2653]     ipv6:[::1]:59929: Complete BDP ping err="No Error"
+I0603 22:33:21.122742000 123145523970048 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb09b82ec40]:  RECV_TRAILING_METADATA
+I0603 22:33:21.122749000 123145523970048 chttp2_transport.cc:1360]     perform_stream_op_locked:  RECV_TRAILING_METADATA; on_complete = 0x0
+I0603 22:33:21.123001000 123145540759552 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb09b82ec40]:  RECV_MESSAGE
+I0603 22:33:21.123020000 123145540759552 chttp2_transport.cc:1360]     perform_stream_op_locked:  RECV_MESSAGE; on_complete = 0x0
+I0603 22:33:21.123274000 123145540759552 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb09b82ec40]:  SEND_INITIAL_METADATA{key=3a 73 74 61 74 75 73 ':status' value=32 30 30 '200', key=63 6f 6e 74 65 6e 74 2d 74 79 70 65 'content-type' value=61 70 70 6c 69 63 61 74 69 6f 6e 2f 67 72 70 63 'application/grpc', key=67 72 70 63 2d 61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'grpc-accept-encoding' value=69 64 65 6e 74 69 74 79 2c 64 65 66 6c 61 74 65 2c 67 7a 69 70 'identity,deflate,gzip', key=61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'accept-encoding' value=69 64 65 6e 74 69 74 79 2c 67 7a 69 70 'identity,gzip'} SEND_MESSAGE:flags=0x00000000:len=13 SEND_TRAILING_METADATA{key=67 72 70 63 2d 73 74 61 74 75 73 'grpc-status' value=30 '0', key=67 72 70 63 2d 6d 65 73 73 61 67 65 'grpc-message' value=}
+I0603 22:33:21.123297000 123145540759552 chttp2_transport.cc:1360]     perform_stream_op_locked:  SEND_INITIAL_METADATA{key=3a 73 74 61 74 75 73 ':status' value=32 30 30 '200', key=63 6f 6e 74 65 6e 74 2d 74 79 70 65 'content-type' value=61 70 70 6c 69 63 61 74 69 6f 6e 2f 67 72 70 63 'application/grpc', key=67 72 70 63 2d 61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'grpc-accept-encoding' value=69 64 65 6e 74 69 74 79 2c 64 65 66 6c 61 74 65 2c 67 7a 69 70 'identity,deflate,gzip', key=61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'accept-encoding' value=69 64 65 6e 74 69 74 79 2c 67 7a 69 70 'identity,gzip'} SEND_MESSAGE:flags=0x00000000:len=13 SEND_TRAILING_METADATA{key=67 72 70 63 2d 73 74 61 74 75 73 'grpc-status' value=30 '0', key=67 72 70 63 2d 6d 65 73 73 61 67 65 'grpc-message' value=}; on_complete = 0x7fb09b82ea48
+I0603 22:33:21.123303000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: :status: 200
+I0603 22:33:21.123307000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: content-type: application/grpc
+I0603 22:33:21.123310000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: grpc-accept-encoding: identity,deflate,gzip
+I0603 22:33:21.123313000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: accept-encoding: identity,gzip
+I0603 22:33:21.123317000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:TRL:SVR: grpc-status: 0
+I0603 22:33:21.123320000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:TRL:SVR: grpc-message: 
+I0603 22:33:21.123325000 123145540759552 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state IDLE -> WRITING [SEND_INITIAL_METADATA]
+I0603 22:33:21.123330000 123145540759552 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING -> WRITING+MORE [SEND_MESSAGE]
+I0603 22:33:21.123335000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb09b80ee00 0x7fb09b82ea48 refs=3 flags=0x0001 desc=op->on_complete err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.123341000 123145540759552 writing.cc:439]               W:0x7fb09b80ee00 SERVER[1] im-(sent,send)=(0,1) announce=0
+I0603 22:33:21.123346000 123145540759552 hpack_encoder.cc:605]         Encode: 'content-type: application/grpc', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.123352000 123145540759552 hpack_encoder.cc:605]         Encode: 'grpc-accept-encoding: identity,deflate,gzip', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.123358000 123145540759552 hpack_encoder.cc:605]         Encode: 'accept-encoding: identity,gzip', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.123365000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb09b80ee00 0x7fb09b82ea48 refs=2 flags=0x0001 desc=send_initial_metadata_finished err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.123374000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb09b80ee00 0x7fb09b82ea48 refs=1 flags=0x0001 desc=finish_write_cb err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.123380000 123145540759552 writing.cc:566]               sending trailing_metadata
+I0603 22:33:21.123466000 123145540759552 hpack_encoder.cc:605]         Encode: 'grpc-status: 0', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.123487000 123145540759552 hpack_encoder.cc:605]         Encode: 'grpc-message: ', elem_interned=0 [2], k_interned=1, v_interned=0
+I0603 22:33:21.123498000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb09b80ee00 0x7fb09b82ea48 refs=0 flags=0x0001 desc=send_trailing_metadata_finished err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.123538000 123145540759552 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING+MORE -> WRITING [begin write in current thread]
+I0603 22:33:21.123716000 123145540759552 chttp2_transport.cc:796]      W:0x7fb09b80ee00 SERVER [ipv6:[::1]:59929] state WRITING -> IDLE [finish writing]
+I0603 22:33:21.124304000 123145523970048 chttp2_transport.cc:2912]     transport 0x7fb09b80ee00 set connectivity_state=4
+I0603 22:33:21.124327000 123145523970048 chttp2_transport.cc:1849]     perform_transport_op[t=0x7fb09b80ee00]: SET_ACCEPT_STREAM:0x0(0x0,...)
+I0603 22:33:21.303695000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state IDLE -> WRITING [TRANSPORT_FLOW_CONTROL]
+I0603 22:33:21.303707000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING -> WRITING+MORE [INITIAL_WRITE]
+I0603 22:33:21.303721000 123145523970048 chttp2_transport.cc:1849]     perform_transport_op[t=0x7fb08b888400]: START_CONNECTIVITY_WATCH:watcher=0x7fb09b57b710:from=IDLE SET_ACCEPT_STREAM:0x1044da7f0(0x7fb09b562d08,...)
+I0603 22:33:21.303732000 123145523970048 writing.cc:125]               SERVER: Ping sent [ipv6:[::1]:59931]: 2/2
+I0603 22:33:21.303736000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING+MORE -> WRITING [begin write in current thread]
+I0603 22:33:21.303753000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING -> IDLE [finish writing]
+I0603 22:33:21.303758000 123145523970048 chttp2_transport.cc:2629]     ipv6:[::1]:59931: Start BDP ping err="No Error"
+I0603 22:33:21.303812000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59931: got setting ENABLE_PUSH = 0
+I0603 22:33:21.303823000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59931: got setting MAX_CONCURRENT_STREAMS = 0
+I0603 22:33:21.303828000 123145523970048 frame_settings.cc:224]        0x7fb08b888400[svr] adding 4128769 for initial_window change
+I0603 22:33:21.303831000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59931: got setting INITIAL_WINDOW_SIZE = 4194304
+I0603 22:33:21.303834000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59931: got setting MAX_FRAME_SIZE = 4194304
+I0603 22:33:21.303837000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59931: got setting MAX_HEADER_LIST_SIZE = 8192
+I0603 22:33:21.303840000 123145523970048 frame_settings.cc:231]        CHTTP2:SVR:ipv6:[::1]:59931: got setting GRPC_ALLOW_TRUE_BINARY_METADATA = 1
+I0603 22:33:21.303845000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state IDLE -> WRITING [PING_RESPONSE]
+I0603 22:33:21.303853000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING -> WRITING [begin write in current thread]
+I0603 22:33:21.303867000 123145523970048 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING -> IDLE [finish writing]
+I0603 22:33:21.304482000 123145523970048 parsing.cc:681]               parsing initial_metadata
+I0603 22:33:21.304490000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :scheme: 68 74 74 70 'http'
+I0603 22:33:21.304494000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :method: 50 4f 53 54 'POST'
+I0603 22:33:21.304500000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :authority: 6c 6f 63 61 6c 68 6f 73 74 3a 35 30 30 35 31 'localhost:50051'
+I0603 22:33:21.304506000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: :path: 2f 68 65 6c 6c 6f 57 6f 72 6c 64 2e 47 72 65 65 74 65 72 2f 73 61 79 48 65 6c 6c 6f '/helloWorld.Greeter/sayHello'
+I0603 22:33:21.304511000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: te: 74 72 61 69 6c 65 72 73 'trailers'
+I0603 22:33:21.304516000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: content-type: 61 70 70 6c 69 63 61 74 69 6f 6e 2f 67 72 70 63 'application/grpc'
+I0603 22:33:21.304521000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: user-agent: 67 72 70 63 2d 70 79 74 68 6f 6e 2f 31 2e 32 39 2e 30 20 67 72 70 63 2d 63 2f 31 30 2e 30 2e 30 20 28 6f 73 78 3b 20 63 68 74 74 70 32 29 'grpc-python/1.29.0 grpc-c/10.0.0 (osx; chttp2)'
+I0603 22:33:21.304527000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: grpc-accept-encoding: 69 64 65 6e 74 69 74 79 2c 64 65 66 6c 61 74 65 2c 67 7a 69 70 'identity,deflate,gzip'
+I0603 22:33:21.304531000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: accept-encoding: 69 64 65 6e 74 69 74 79 2c 67 7a 69 70 'identity,gzip'
+I0603 22:33:21.304535000 123145523970048 parsing.cc:430]               HTTP:1:HDR:SVR: grpc-timeout: 31 30 53 '10S'
+I0603 22:33:21.304544000 123145523970048 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb08b88b040]:  RECV_INITIAL_METADATA
+I0603 22:33:21.304550000 123145523970048 chttp2_transport.cc:1360]     perform_stream_op_locked:  RECV_INITIAL_METADATA; on_complete = 0x0
+I0603 22:33:21.304616000 123145523970048 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb08b88b040]:  RECV_TRAILING_METADATA
+I0603 22:33:21.304622000 123145523970048 chttp2_transport.cc:1360]     perform_stream_op_locked:  RECV_TRAILING_METADATA; on_complete = 0x0
+I0603 22:33:21.304682000 123145523970048 chttp2_transport.cc:2653]     ipv6:[::1]:59931: Complete BDP ping err="No Error"
+I0603 22:33:21.304718000 123145540759552 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb08b88b040]:  RECV_MESSAGE
+I0603 22:33:21.304729000 123145540759552 chttp2_transport.cc:1360]     perform_stream_op_locked:  RECV_MESSAGE; on_complete = 0x0
+I0603 22:33:21.304861000 123145540759552 chttp2_transport.cc:1658]     perform_stream_op[s=0x7fb08b88b040]:  SEND_INITIAL_METADATA{key=3a 73 74 61 74 75 73 ':status' value=32 30 30 '200', key=63 6f 6e 74 65 6e 74 2d 74 79 70 65 'content-type' value=61 70 70 6c 69 63 61 74 69 6f 6e 2f 67 72 70 63 'application/grpc', key=67 72 70 63 2d 61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'grpc-accept-encoding' value=69 64 65 6e 74 69 74 79 2c 64 65 66 6c 61 74 65 2c 67 7a 69 70 'identity,deflate,gzip', key=61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'accept-encoding' value=69 64 65 6e 74 69 74 79 2c 67 7a 69 70 'identity,gzip'} SEND_MESSAGE:flags=0x00000000:len=13 SEND_TRAILING_METADATA{key=67 72 70 63 2d 73 74 61 74 75 73 'grpc-status' value=30 '0', key=67 72 70 63 2d 6d 65 73 73 61 67 65 'grpc-message' value=}
+I0603 22:33:21.304884000 123145540759552 chttp2_transport.cc:1360]     perform_stream_op_locked:  SEND_INITIAL_METADATA{key=3a 73 74 61 74 75 73 ':status' value=32 30 30 '200', key=63 6f 6e 74 65 6e 74 2d 74 79 70 65 'content-type' value=61 70 70 6c 69 63 61 74 69 6f 6e 2f 67 72 70 63 'application/grpc', key=67 72 70 63 2d 61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'grpc-accept-encoding' value=69 64 65 6e 74 69 74 79 2c 64 65 66 6c 61 74 65 2c 67 7a 69 70 'identity,deflate,gzip', key=61 63 63 65 70 74 2d 65 6e 63 6f 64 69 6e 67 'accept-encoding' value=69 64 65 6e 74 69 74 79 2c 67 7a 69 70 'identity,gzip'} SEND_MESSAGE:flags=0x00000000:len=13 SEND_TRAILING_METADATA{key=67 72 70 63 2d 73 74 61 74 75 73 'grpc-status' value=30 '0', key=67 72 70 63 2d 6d 65 73 73 61 67 65 'grpc-message' value=}; on_complete = 0x7fb08b88ae48
+I0603 22:33:21.304890000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: :status: 200
+I0603 22:33:21.304894000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: content-type: application/grpc
+I0603 22:33:21.304897000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: grpc-accept-encoding: identity,deflate,gzip
+I0603 22:33:21.304901000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:HDR:SVR: accept-encoding: identity,gzip
+I0603 22:33:21.304904000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:TRL:SVR: grpc-status: 0
+I0603 22:33:21.304908000 123145540759552 chttp2_transport.cc:1336]     HTTP:1:TRL:SVR: grpc-message: 
+I0603 22:33:21.304912000 123145540759552 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state IDLE -> WRITING [SEND_INITIAL_METADATA]
+I0603 22:33:21.304917000 123145540759552 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING -> WRITING+MORE [SEND_MESSAGE]
+I0603 22:33:21.304921000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb08b888400 0x7fb08b88ae48 refs=3 flags=0x0001 desc=op->on_complete err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.304926000 123145540759552 writing.cc:439]               W:0x7fb08b888400 SERVER[1] im-(sent,send)=(0,1) announce=0
+I0603 22:33:21.304930000 123145540759552 hpack_encoder.cc:605]         Encode: 'content-type: application/grpc', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.304935000 123145540759552 hpack_encoder.cc:605]         Encode: 'grpc-accept-encoding: identity,deflate,gzip', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.304939000 123145540759552 hpack_encoder.cc:605]         Encode: 'accept-encoding: identity,gzip', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.304943000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb08b888400 0x7fb08b88ae48 refs=2 flags=0x0001 desc=send_initial_metadata_finished err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.304948000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb08b888400 0x7fb08b88ae48 refs=1 flags=0x0001 desc=finish_write_cb err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.304952000 123145540759552 writing.cc:566]               sending trailing_metadata
+I0603 22:33:21.304956000 123145540759552 hpack_encoder.cc:605]         Encode: 'grpc-status: 0', elem_interned=1 [1], k_interned=1, v_interned=1
+I0603 22:33:21.304960000 123145540759552 hpack_encoder.cc:605]         Encode: 'grpc-message: ', elem_interned=0 [2], k_interned=1, v_interned=0
+I0603 22:33:21.304964000 123145540759552 chttp2_transport.cc:1199]     complete_closure_step: t=0x7fb08b888400 0x7fb08b88ae48 refs=0 flags=0x0001 desc=send_trailing_metadata_finished err="No Error" write_state=WRITING+MORE
+I0603 22:33:21.304969000 123145540759552 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING+MORE -> WRITING [begin write in current thread]
+I0603 22:33:21.304992000 123145540759552 chttp2_transport.cc:796]      W:0x7fb08b888400 SERVER [ipv6:[::1]:59931] state WRITING -> IDLE [finish writing]
+I0603 22:33:21.305362000 123145523970048 chttp2_transport.cc:2912]     transport 0x7fb08b888400 set connectivity_state=4
+I0603 22:33:21.305392000 123145523970048 chttp2_transport.cc:1849]     perform_transport_op[t=0x7fb08b888400]: SET_ACCEPT_STREAM:0x0(0x0,...)
