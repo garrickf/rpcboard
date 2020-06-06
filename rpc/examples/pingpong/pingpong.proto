@@ -1,0 +1,21 @@
+// pingpong.proto
+// 
+// Defines PingPong service, which parrots a number back and forth, decrementing 
+// it, until one reaches one or zero. The server that was pinged replies with 
+// whether the number was even or odd.
+
+syntax = "proto3";
+
+package pingpong; // Note: ignored in Python
+
+service PingPong {
+  rpc askEvenOrOdd (NumberRequest) returns (EvenOddResponse) {}
+}
+
+message NumberRequest {
+  int32 num = 1;
+}
+
+message EvenOddResponse {
+  string message = 1;
+}
