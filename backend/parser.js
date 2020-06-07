@@ -147,7 +147,7 @@ const ROLES = {
  * necessary events are parsed and matched
  */
 class LogEvent {
-  constructor() {
+  constructor(guessedRole) {
     // Note: ES6 feature for object key by variable
     this.collectedOps = {
       [TRANSPORT_OPS.SEND_INITIAL_METADATA]: false,
@@ -165,9 +165,15 @@ class LogEvent {
       [TRANSPORT_OPS.SEND_TRAILING_METADATA]: null,
       [TRANSPORT_OPS.RECV_TRAILING_METADATA]: null,
     };
-    this.role = undefined; // server or client (i.e. rec then send or send then rec)
+    this.role = guessedRole; // server or client (i.e. rec then send or send then rec)
     this.threads = []; // Could have multiple threads (server reader)
-    this.transport = null; // NOTE: have only seen one transport
+    this.threadId = null;
+    this.transportId = null; // NOTE: have only seen one transport
+
+    this.metadata = {};
+
+    // NOTE: allow for inferences from multiple places
+    // role inferences: timestamp or parsing.cc provided code
   }
 
   isComplete() {
@@ -184,8 +190,51 @@ class LogEvent {
     this.collectedOps[type] = true;
     this.opTimestamps[type] = data.timestamp;
     // TODO: just create new object with spread operator? and store
+
+    // NOTE: assume that RECV_MESSAGE has the correct TID we want to store
+    if (type === TRANSPORT_OPS.RECV_MESSAGE) {
+      this.metadata.recvMessageTID = data.tid;
+      this.threadId = data.tid;
+    }
+
+    if (!!data.transportId) {
+      this.transportId = data.transportId
+    }
+  }
+
+  _inferRoleFromTimestamps() {
+    if (
+      this.opTimestamps[TRANSPORT_OPS.RECV_INITIAL_METADATA] <
+      this.opTimestamps[TRANSPORT_OPS.SEND_INITIAL_METADATA]
+    ) {
+      // From the server's point of view, we should recv before send
+      return ROLES.SERVER;
+    } else {
+      // From the client's point of view, we send before we recv
+      return ROLES.CLIENT;
+    }
+  }
+
+  /** Infers role based on information stored inside LogEvent */
+  setRole() {
+    // Right now, we use timestamps
+    const role = this._inferRoleFromTimestamps();
+    this.role = role;
+  }
+
+  getThreadId() {
+    return this.threadId;
+  }
+
+  isIdentifiable() {
+    return !!this.threadId;
   }
 }
+
+// NOTE: assume we'll receive information to identify a log event
+// before information about another log event comes in (we have to RECV_MESSAGE).
+// This means that we can store a single in-progress slot and maintain an
+// index of TID's/transport ID's to LogEntries.
 
 // TODO: mapping from thread id/transport id to inprocess connection
 
@@ -196,7 +245,6 @@ const outstandingLogEvent = {
   tid: null,
   transportID: null,
 };
-const completedLogEvents = []; // TODO: might just schedule event for each new LogEvent, and add it to an external queue
 
 // Transport ID -> LogEvent
 const TransportToLogEvent = {};
@@ -274,24 +322,36 @@ const splitLine = (line) => {
  * found.
  */
 class Parser extends EventEmitter {
+  /**
+   * The constructor takes in a readInterface (something that emits line events)
+   * and sets up any necessary bookkeeping variables.
+   */
   constructor(readInterface) {
     super();
     this.readInterface = readInterface; // Store readInterface
     // TODO: initialize bookkeeping variables
+    this.partialLogEvent = null;
+    this.transportIDToLogEvent = {};
+    this.threadIDToLogEvent = {};
   }
 
+  /** Clients call this to begin parsing. */
   start() {
     this._keepReading(); // Begin processing stream
   }
 
   /**
    * Convenience wrapper that adds a user-supplied callback to be called when
-   * log entry is created.
+   * log entry is created. Clients call this.
    */
   onLogEvent(cb) {
     this.on(EVENT_TYPES.LOG_ENTRY_CREATION, cb);
   }
 
+  /**
+   * Convenience wrapper that emits a LogEntry creation event. The
+   * implementation calls this.
+   */
   _emitLogEvent(logEntry) {
     this.emit(EVENT_TYPES.LOG_ENTRY_CREATION, logEntry);
   }
@@ -303,48 +363,76 @@ class Parser extends EventEmitter {
   _keepReading() {
     this.readInterface.on("line", (line) => {
       const [prefix, logline] = splitLine(line);
-      // console.log(prefix);
-      // console.log(logline);
+      console.log(line);
 
       if (isParsingInitialMetadata(logline)) {
         /**
          * Let's assume parsing indicates that the net message is going to be a
          * RECV_INITIAL_METADATA from the server's point of view
          */
-        console.log("parsing init meta, create new logevent...");
-        const event = new LogEvent();
-        outstandingLogEvent.logEvent = event;
+        console.log("(parser) parsing init meta, create new logevent...");
+        // const event = new LogEvent();
+        // outstandingLogEvent.logEvent = event;
 
-        inflightLogEvents.push(event);
+        // inflightLogEvents.push(event);
+        const event = new LogEvent(ROLES.SERVER); // Guess server
+        if (this.partialLogEvent !== null) {
+          throw Error("(parser) Partial LogEvent expected to be null..."); // TODO: make more verbose
+        }
+        this.partialLogEvent = event;
       }
 
+      // Server-specific: case by the current expected role?
       if (hasRPCPath(logline)) {
-        inflightLogEvents[0].path = parseRPCPath(logline);
+        this.partialLogEvent.path = parseRPCPath(logline);
       }
 
       const timestamp = parseTimestamp(prefix);
       const tid = parseTID(prefix);
-      const transportID = parseTransportId(logline); // TODO: parse transport ID
+      const transportId = parseTransportId(logline);
 
       const ops = isTransportOpLog(logline);
       ops.forEach((op) => {
+        // Need to decide between choosing identified and partial
+        let currEvent = null
+        if (this.partialLogEvent !== null) {
+          currEvent = this.partialLogEvent
+        } else {
+          currEvent = this.threadIDToLogEvent[tid];
+          // TODO: add some robustness by checking transport id as well
+        }
+
         // Mark op as collected and record timestamp
-        inflightLogEvents[0].opTimestamps[op] = timestamp;
-        inflightLogEvents[0].collectedOps[op] = true;
+        currEvent.collectOp(op, {
+          timestamp: timestamp,
+          tid: tid,
+          transportId: transportId,
+        });
 
-        if (!inflightLogEvents[0].transport) {
-          inflightLogEvents[0].transport = transportID;
+        if (this.partialLogEvent !== null && currEvent.isIdentifiable()) {
+          this.threadIDToLogEvent[currEvent.getThreadId()] = currEvent
+          this.partialLogEvent = null; // Reset
         }
 
-        if (!inflightLogEvents[0].threads.includes(tid)) {
-          inflightLogEvents[0].threads.push(tid);
+        if (currEvent.isComplete()) {
+          currEvent.setRole();
+          this._emitLogEvent(currEvent);
         }
+
+        // if (!inflightLogEvents[0].transport) {
+        //   inflightLogEvents[0].transport = transportID;
+        // }
+
+        // if (!inflightLogEvents[0].threads.includes(tid)) {
+        //   inflightLogEvents[0].threads.push(tid);
+        // }
       });
 
-      if (inflightLogEvents.length && inflightLogEvents[0].isComplete()) {
-        this._emitLogEvent(inflightLogEvents[0]);
-        inflightLogEvents.pop(0);
-      }
+      // if (inflightLogEvents.length && inflightLogEvents[0].isComplete()) {
+      //   inflightLogEvents[0].setRole();
+      //   this._emitLogEvent(inflightLogEvents[0]);
+      //   inflightLogEvents.pop(0);
+      // }
     });
   }
 }

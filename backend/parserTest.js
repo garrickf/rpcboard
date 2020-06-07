@@ -8,7 +8,9 @@ const readline = require("readline");
 
 const Parser = require("./parser");
 
-const TEST_FILE = "../rpc/debugLog.txt"; // TODO: turn into examples/staticLogs/...
+// Change test file below
+// const TEST_FILE = "../rpc/staticLogs/helloWorld/server-twice.txt";
+const TEST_FILE = "../rpc/staticLogs/pingpong/server-recv.txt";
 
 // Create read interface
 const readInterface = readline.createInterface({
@@ -24,9 +26,6 @@ parser.onLogEvent((logEntry) => {
 parser.start();
 
 // TODO: create sample logs for toy programs:
-// Hello world
-// Hello worlds
-// Ping pong
 // Hot potato
 // Three tier service architecture
 // Paxos, Raft, or VR
