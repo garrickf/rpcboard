@@ -1,32 +1,47 @@
 /** server.js
- * 
+ *
  * The central log server accepts connections that stream it log data, as well
  * as serving the frontend.
- * 
+ *
  * Sources:
- * MDN web docs: TODO: get link
+ * MDN web docs: https://developer.mozilla.org/en-US/docs/
+ * Express docs: https://expressjs.com/en/4x/api.html
  */
 
-const http = require("http"); // Load HTTP module
-const HOSTNAME = "localhost";
+// const HOSTNAME = "localhost";
 const SERVE_PORT = 6006;
 
 const net = require("net"); // For lower-lever management of sockets
 const readline = require("readline");
+const fs = require("fs");
+const path = require("path");
+const express = require("express");
 
 const Parser = require("./parser");
 
-// Create HTTP server and listen on port 3000 for requests
-const server = http.createServer((req, res) => {
-  // Set the response HTTP header with HTTP status and Content type
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Hello World\n");
-});
+console.log("Starting rpcboard...\n");
 
-// Listen for request on port 3000, and as a callback function have the port listened on logged
-server.listen(SERVE_PORT, HOSTNAME, () => {
-  console.log(`Server running at http://${HOSTNAME}:${SERVE_PORT}/`);
+// Create HTTP server and listen on port 3000 for requests
+const app = express();
+
+const APP_DIR = "../frontend/build";
+
+// Use express.static built-in middleware for serving static files
+app.use(express.static(path.join(__dirname, APP_DIR)));
+
+// Express routes
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, APP_DIR, "index.html"))
+);
+
+app.get("/data/", (req, res) => res.send("I AM DATA"));
+// TODO: ability to query all files in data directory? Ability to query one
+// file at a time, by name?
+
+
+app.listen(SERVE_PORT, () => {
+  console.log(`Server running on http://localhost:${SERVE_PORT}/`);
+  console.log(`\tGo to http://localhost:${SERVE_PORT}/ to see rpcboard.`);
 });
 
 // Listen for client connections on another port, these are streaming data to us
@@ -42,11 +57,11 @@ const logServer = net
     const parser = new Parser(readInterface);
     parser.onLogEvent((event) => {
       console.log(event);
-    })
+    });
     parser.start();
 
     socket.addListener("connect", function () {
-      console.log("client connected: " + this.remoteAddress);
+      console.log("Client connected: " + this.remoteAddress);
     });
 
     // TODO: add parser to a combined utility that cross-references and combines
@@ -58,9 +73,41 @@ const logServer = net
   });
 
 // Grab an arbitrary unused port.
-logServer.listen(7007, HOSTNAME, () => {
-  console.log("opened server on", logServer.address());
+const PORT = 7007;
+logServer.listen(PORT, () => {
+  console.log(`Now accepting log connections on http://localhost:${PORT}/`);
+  console.log(
+    `Feed your distributed app's logs into rpcboard by running the following:`
+  );
+  console.log(`\trpcboard-trace -p ${PORT} [command ...]`);
+  // NOTE: can call logServer.address()
 });
+
+// NOTE: use JS async/await to create directory, write out file
+// see https://stackoverflow.com/questions/4482686/check-synchronously-if-file-directory-exists-in-node-js
+const createDataDirectory = async (dirname) => {
+  try {
+    await fs.promises.mkdir(dirname);
+  } catch (error) {
+    if (error.code !== "EEXIST") {
+      // Some other error than directory already exists
+      console.log(error);
+    }
+  }
+};
+
+const writeFile = async (filename, data) => {
+  try {
+    // writeFile will truncate file if it exists
+    await fs.promises.writeFile(filename, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+createDataDirectory("./data");
+createDataDirectory("./data/run1");
+writeFile("helloworld.txt", "Hello world");
 
 // TODO: make server listen for stream connections, take logs and parse them
 // From logs, pull log events and construct spans

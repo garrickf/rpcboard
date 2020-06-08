@@ -1,0 +1,5 @@
+# Dependencies
+/node_modules
+
+# Data files (created during execution)
+/data
