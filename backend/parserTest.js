@@ -26,6 +26,7 @@ const readInterface = readline.createInterface({
 const parser = new Parser(readInterface, {verbose: true});
 parser.onLogEvent((logEntry) => {
   console.log(logEntry);
+  // console.log(JSON.stringify(logEntry)); // Debug serialization
 });
 parser.start();
 

@@ -52,6 +52,20 @@ class Span {
   hasTimestampInServerRange(timestamp) {
     return timestamp > this.getServerStart() && timestamp < this.getServerEnd();
   }
+
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#:~:text=stringify()%20method%20converts%20a,a%20replacer%20array%20is%20specified.
+  /** Serialization */
+  toJSON() {
+    return {
+      "clientEvent": this.clientEvent,
+      "serverEvent": this.serverEvent,
+    };
+  }
+
+  // addData({clientEvent, serverEvent}) {
+  //   this.clientEvent = clientEvent;
+  //   this.serverEvent = serverEvent;
+  // }
 }
 
 module.exports = Span;

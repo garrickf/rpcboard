@@ -8,6 +8,7 @@ const readline = require("readline");
 const Spanner = require("./spanner");
 const Parser = require("./parser");
 const TreeGenerator = require("./treeGenerator");
+const { treeFromJSON } = require("./serialization");
 
 // Change test files below
 // const TEST_FILES = [
@@ -36,5 +37,9 @@ TEST_FILES.forEach((test_file) => {
 treeGenerator = new TreeGenerator(spanner);
 treeGenerator.onTreeUpdate((tree) => {
   treeGenerator.prettyPrintSelf();
+  console.log(JSON.stringify(treeGenerator.tree)); // Debug serialization
+  // Debug resuscitation
+  const newTree = treeFromJSON(JSON.stringify(treeGenerator.tree))
+  treeGenerator._prettyPrint(newTree, 0);
 });
 treeGenerator.start();

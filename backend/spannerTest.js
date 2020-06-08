@@ -38,5 +38,6 @@ spanner.onSpanCreation((span) => {
   console.log(span.getServerStart());
   console.log(span.getServerEnd());
   console.log(span.getEnd());
+  // console.log(JSON.stringify(span)); // Serialization debug
 });
 spanner.start();

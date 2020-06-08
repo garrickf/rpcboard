@@ -6,9 +6,9 @@
 
 const EventEmitter = require("events").EventEmitter;
 
+const Span = require("./classes/span");
 const { EVENT_TYPES } = require("./eventTypes");
 const { TRANSPORT_OPS, ROLES } = require("./constants");
-const Span = require("./classes/span");
 
 class Spanner extends EventEmitter {
   constructor() {

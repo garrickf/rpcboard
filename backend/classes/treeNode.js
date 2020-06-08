@@ -26,6 +26,18 @@ class TreeNode {
   getSpan() {
     return this.span;
   }
+
+  toJSON() {
+    return {
+      "span": this.span,
+      "children": this.children,
+    }
+  }
+
+  addData({span, children}) {
+    this.span = span;
+    this.children = children;
+  }
 }
 
 // Usage: const TreeNode = require("./classes/treeNode");

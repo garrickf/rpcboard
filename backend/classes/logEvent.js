@@ -112,6 +112,47 @@ class LogEvent {
   isIdentifiable() {
     return !!this.threadId && !!this.transportId;
   }
+
+  /** Serialization */
+  toJSON() {
+    return {
+      collectedOps: this.collectedOps,
+      opTimestamps: this.opTimestamps,
+      parsedMetadata: this.parsedMetadata,
+      role: this.role,
+      authority: this.authority,
+      path: this.path,
+      threadId: this.threadId,
+      transportId: this.transportId,
+      metadata: this.metadata,
+    };
+  }
+
+  fromJSON() {
+    return;
+  }
+
+  addData({
+    collectedOps,
+    opTimestamps,
+    parsedMetadata,
+    role,
+    authority,
+    path,
+    threadId,
+    transportId,
+    metadata,
+  }) {
+    this.collectedOps = collectedOps;
+    this.opTimestamps = opTimestamps;
+    this.parsedMetadata = parsedMetadata;
+    this.role = role;
+    this.authority = authority;
+    this.path = path;
+    this.threadId = threadId;
+    this.transportId = transportId;
+    this.metadata = metadata;
+  }
 }
 
 // Usage: const LogEvent = require("./classes/logEvent");
