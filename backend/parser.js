@@ -69,7 +69,7 @@ const parseSourceLine = (prefix) => {
  * exists (use hasRPCPath)
  */
 const parseRPCPath = (logline) => {
-  const pattern = /'([/\.\w]+)'/;
+  const pattern = /(?:'|: )([\/\.\w]+)'/;
   const matches = logline.match(pattern);
   if (!matches) return null;
 
@@ -84,7 +84,7 @@ const hasRPCPath = (logline) => {
 
 const parseRPCAuthority = (logline) => {
   // Note: assumes local development (localhost)
-  const pattern = /'(localhost:[\d]*)'/;
+  const pattern = /(?:'|: )(localhost:[\d]*)'/;
   const matches = logline.match(pattern);
   if (!matches) return null;
 
@@ -137,9 +137,24 @@ const parseTransportId = (logline) => {
   return null;
 };
 
+/** Used to extract context/role from parsing information logline */
+const parseParsingRole = (logline) => {
+  const pattern = /HTTP:[\d]+:HDR:([\w]+):/;
+  const matches = logline.match(pattern);
+  if (!matches) return null;
+
+  const role = PARSE_ROLE_TO_ROLE[matches[1]];
+  return role;
+};
+
 const ROLES = {
   SERVER: "server",
   CLIENT: "client",
+};
+
+const PARSE_ROLE_TO_ROLE = {
+  CLI: ROLES.CLIENT,
+  SVR: ROLES.SERVER,
 };
 
 /**
@@ -157,6 +172,7 @@ class LogEvent {
       [TRANSPORT_OPS.SEND_TRAILING_METADATA]: false,
       [TRANSPORT_OPS.RECV_TRAILING_METADATA]: false,
     };
+
     this.opTimestamps = {
       [TRANSPORT_OPS.SEND_INITIAL_METADATA]: null,
       [TRANSPORT_OPS.RECV_INITIAL_METADATA]: null,
@@ -165,8 +181,12 @@ class LogEvent {
       [TRANSPORT_OPS.SEND_TRAILING_METADATA]: null,
       [TRANSPORT_OPS.RECV_TRAILING_METADATA]: null,
     };
+
+    this.parsedMetadata = false;
+
     this.role = guessedRole; // server or client (i.e. rec then send or send then rec)
-    this.threads = []; // Could have multiple threads (server reader)
+    this.authority = null;
+    // this.threads = []; // Could have multiple threads (server reader)
     this.threadId = null;
     this.transportId = null; // NOTE: have only seen one transport
 
@@ -178,10 +198,14 @@ class LogEvent {
 
   isComplete() {
     // NOTE: Object.entries() returns [key, value] pairs
-    return Object.entries(this.collectedOps).reduce(
+    const allOpsCollected = Object.entries(this.collectedOps).reduce(
       (acc, [_, v]) => acc && v, // Logical AND of all collectedOps
       true
     );
+    return (
+      allOpsCollected && !!this.path && !!this.authority && this.parsedMetadata
+    );
+    // return allOpsCollected && !!this.role; // Assume TID and transportId done w/
   }
 
   collectOp(type, data) {
@@ -198,8 +222,15 @@ class LogEvent {
     }
 
     if (!!data.transportId) {
-      this.transportId = data.transportId
+      this.transportId = data.transportId;
     }
+  }
+
+  /** Assigns timestamp to all ops in array ops */
+  setTimestampForOps(ops, timestamp) {
+    ops.forEach((op) => {
+      this.opTimestamps[op] = timestamp;
+    });
   }
 
   _inferRoleFromTimestamps() {
@@ -219,6 +250,7 @@ class LogEvent {
   setRole() {
     // Right now, we use timestamps
     const role = this._inferRoleFromTimestamps();
+    // TODO: cross-reference against guessed role
     this.role = role;
   }
 
@@ -226,8 +258,13 @@ class LogEvent {
     return this.threadId;
   }
 
+  getTransportId() {
+    return this.transportId;
+  }
+
+  /** Returns whether or not a LogEvent can be indexed by its id's */
   isIdentifiable() {
-    return !!this.threadId;
+    return !!this.threadId && !!this.transportId;
   }
 }
 
@@ -236,86 +273,10 @@ class LogEvent {
 // This means that we can store a single in-progress slot and maintain an
 // index of TID's/transport ID's to LogEntries.
 
-// TODO: mapping from thread id/transport id to inprocess connection
-
-const inflightLogEvents = [];
-// Store an unidentified log event here until is can be shuffled off
-const outstandingLogEvent = {
-  logEvent: null,
-  tid: null,
-  transportID: null,
-};
-
-// Transport ID -> LogEvent
-const TransportToLogEvent = {};
-
-// Thread ID -> LogEvent
-const TIDToLogEvent = {};
-
-// TODO: extend Event emitter and emit event on LogEvent completion
-
 /** General log data is placed in a 70 character prefix. */
 const splitLine = (line) => {
   return [line.substr(0, 70), line.substr(71)];
 };
-
-// readInterface.on("line", (line) => {
-//   const [prefix, logline] = splitLine(line);
-//   // console.log(prefix);
-//   // console.log(logline);
-
-//   if (isParsingInitialMetadata(logline)) {
-//     /**
-//      * Let's assume parsing indicates that the net message is going to be a
-//      * RECV_INITIAL_METADATA from the server's point of view
-//      */
-//     console.log("parsing init meta, create new logevent...");
-//     const event = new LogEvent();
-//     outstandingLogEvent.logEvent = event;
-
-//     inflightLogEvents.push(event);
-//   }
-
-//   if (hasRPCPath(logline)) {
-//     inflightLogEvents[0].path = parseRPCPath(logline);
-//   }
-
-//   const timestamp = parseTimestamp(prefix);
-//   const tid = parseTID(prefix);
-//   const transportID = parseTransportId(logline); // TODO: parse transport ID
-
-//   const ops = isTransportOpLog(logline);
-//   ops.forEach((op) => {
-//     // Mark op as collected and record timestamp
-//     inflightLogEvents[0].opTimestamps[op] = timestamp;
-//     inflightLogEvents[0].collectedOps[op] = true;
-
-//     if (!inflightLogEvents[0].transport) {
-//       inflightLogEvents[0].transport = transportID;
-//     }
-
-//     if (!inflightLogEvents[0].threads.includes(tid)) {
-//       inflightLogEvents[0].threads.push(tid);
-//     }
-//   });
-
-//   // Sanity checking code
-//   // const ts = parseDate(prefix);
-//   // const tid = parseTID(prefix);
-//   // const sourceLine = parseSourceLine(prefix);
-//   // console.log(ts.toNSString());
-//   // console.log(tid);
-//   // console.log(sourceLine);
-
-//   // if (hasRPCPath(logline)) {
-//   //   console.log("Has RPC path!");
-//   //   console.log(parseRPCPath(logline));
-//   // }
-// });
-
-// setTimeout(() => {
-//   console.log(inflightLogEvents);
-// }, 1000);
 
 /**
  * The Parser takes in a readInterface and emits events when a LogEvent is
@@ -330,6 +291,7 @@ class Parser extends EventEmitter {
     super();
     this.readInterface = readInterface; // Store readInterface
     // TODO: initialize bookkeeping variables
+    this.sawParsingInitialMetadata = false;
     this.partialLogEvent = null;
     this.transportIDToLogEvent = {};
     this.threadIDToLogEvent = {};
@@ -365,41 +327,121 @@ class Parser extends EventEmitter {
       const [prefix, logline] = splitLine(line);
       console.log(line);
 
-      if (isParsingInitialMetadata(logline)) {
-        /**
-         * Let's assume parsing indicates that the net message is going to be a
-         * RECV_INITIAL_METADATA from the server's point of view
-         */
-        console.log("(parser) parsing init meta, create new logevent...");
-        // const event = new LogEvent();
-        // outstandingLogEvent.logEvent = event;
-
-        // inflightLogEvents.push(event);
-        const event = new LogEvent(ROLES.SERVER); // Guess server
-        if (this.partialLogEvent !== null) {
-          throw Error("(parser) Partial LogEvent expected to be null..."); // TODO: make more verbose
-        }
-        this.partialLogEvent = event;
-      }
-
-      // Server-specific: case by the current expected role?
-      if (hasRPCPath(logline)) {
-        this.partialLogEvent.path = parseRPCPath(logline);
-      }
-
       const timestamp = parseTimestamp(prefix);
       const tid = parseTID(prefix);
       const transportId = parseTransportId(logline);
 
+      // If, in a previous round, we saw a parseInitialMetadata logline
+      if (this.sawParsingInitialMetadata) {
+        // The next line will show whether the parsing was for server or client
+        const role = parseParsingRole(logline);
+        if (role === ROLES.SERVER) {
+          console.log("(parser) parsing init meta, create new logevent...");
+          const event = new LogEvent(ROLES.SERVER); // Guess server
+          event.parsedMetadata = true;
+
+          if (this.partialLogEvent !== null) {
+            throw Error("(parser) Partial LogEvent expected to be null..."); // TODO: make more verbose
+          }
+
+          // Let's assume parsing indicates that the net message is going to be a
+          // RECV_INITIAL_METADATA from the server's point of view
+          this.partialLogEvent = event;
+          this.sawParsingInitialMetadata = false; // Reset
+        } else {
+          // Must be ROLES.CLIENT
+          // Pull out the existing event by thread ID and re-mark timestamps
+          const currEvent = this.threadIDToLogEvent[tid];
+          currEvent.setTimestampForOps(
+            [
+              TRANSPORT_OPS.RECV_INITIAL_METADATA,
+              TRANSPORT_OPS.RECV_MESSAGE,
+              TRANSPORT_OPS.RECV_TRAILING_METADATA,
+            ],
+            timestamp
+          );
+
+          currEvent.parsedMetadata = true;
+          this.sawParsingInitialMetadata = false; // Reset
+
+          if (currEvent.isComplete()) {
+            currEvent.setRole();
+            return this._emitLogEvent(currEvent); // Got all information needed
+          }
+        }
+      }
+
+      // If the current logline is parseInitialMetadata, pay attention to the 
+      // next logline
+      if (isParsingInitialMetadata(logline)) {
+        this.sawParsingInitialMetadata = true;
+      }
+
+      // Server-specific: case by the current expected role?
+      // Client can hit here even when event is "done" parsing
+      let currEvent = null;
+      // console.log(this.partialLogEvent);
+      if (this.partialLogEvent !== null) {
+        currEvent = this.partialLogEvent; // Server event: collecting information before ID
+      } else {
+        currEvent = this.transportIDToLogEvent[transportId];
+        // NOTE: this is where a new client event could pop up
+        if (!currEvent) {
+          // console.log("(parser) Tried to access event, but got none...");
+          // this.partialLogEvent = new LogEvent();
+          // currEvent = this.partialLogEvent;
+          // CLIENT: try using thread ID
+          currEvent = this.threadIDToLogEvent[tid]; // Client event: collect info after ID
+        }
+      }
+      // console.log(currEvent);
+      if (hasRPCPath(logline)) {
+        currEvent.path = parseRPCPath(logline);
+
+        // console.log(currEvent);
+
+        // NOTE: fixed client parse path, added (byzantine) logic for handling client
+        // event completion, but lack of path.
+        // todo: my need authority soon (who we sent it to)
+
+        // Client: could be done with an event here (after all transport ops done)
+        if (currEvent && currEvent.isComplete()) {
+          // TODO: depends on role being set after the fact
+          currEvent.setRole();
+          return this._emitLogEvent(currEvent);
+        }
+      }
+
+      if (hasRPCAuthority(logline)) {
+        currEvent.authority = parseRPCAuthority(logline);
+
+        // Client: could be done with an event here (after all transport ops done)
+        if (currEvent && currEvent.isComplete()) {
+          // TODO: depends on role being set after the fact
+          currEvent.setRole();
+          return this._emitLogEvent(currEvent);
+        }
+      }
+
       const ops = isTransportOpLog(logline);
       ops.forEach((op) => {
         // Need to decide between choosing identified and partial
-        let currEvent = null
+        let currEvent = null;
         if (this.partialLogEvent !== null) {
-          currEvent = this.partialLogEvent
+          // console.log("getting partial");
+          currEvent = this.partialLogEvent;
+          // console.log(currEvent);
         } else {
-          currEvent = this.threadIDToLogEvent[tid];
-          // TODO: add some robustness by checking transport id as well
+          // console.log("getting from lookup");
+          currEvent = this.transportIDToLogEvent[transportId];
+          // NOTE: this is where a new client event could pop up
+          if (!currEvent) {
+            // console.log("need to make a new event");
+            // throw Error("(parser) Tried to access event, but got none...");
+            this.partialLogEvent = new LogEvent();
+            currEvent = this.partialLogEvent;
+          }
+          // console.log(currEvent);
         }
 
         // Mark op as collected and record timestamp
@@ -409,18 +451,21 @@ class Parser extends EventEmitter {
           transportId: transportId,
         });
 
+        // console.log(currEvent, this.transportIDToLogEvent);
+
         if (this.partialLogEvent !== null && currEvent.isIdentifiable()) {
-          this.threadIDToLogEvent[currEvent.getThreadId()] = currEvent
+          this.threadIDToLogEvent[currEvent.getThreadId()] = currEvent;
+          this.transportIDToLogEvent[currEvent.getTransportId()] = currEvent;
           this.partialLogEvent = null; // Reset
         }
 
         if (currEvent.isComplete()) {
           currEvent.setRole();
-          this._emitLogEvent(currEvent);
+          return this._emitLogEvent(currEvent);
         }
 
         // if (!inflightLogEvents[0].transport) {
-        //   inflightLogEvents[0].transport = transportID;
+        //   inflightLogEvents[0].transport = transportId;
         // }
 
         // if (!inflightLogEvents[0].threads.includes(tid)) {

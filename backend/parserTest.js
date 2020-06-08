@@ -10,7 +10,11 @@ const Parser = require("./parser");
 
 // Change test file below
 // const TEST_FILE = "../rpc/staticLogs/helloWorld/server-twice.txt";
-const TEST_FILE = "../rpc/staticLogs/pingpong/server-recv.txt";
+// const TEST_FILE = "../rpc/staticLogs/helloWorld/client-twice.txt";
+// const TEST_FILE = "../rpc/staticLogs/pingpong/server-pair.txt";
+const TEST_FILE = "../rpc/staticLogs/pingpong/server-recv.txt"; // server reply (to pair), client finish (to pair), server reply (to original client)
+// const TEST_FILE = "../rpc/staticLogs/pingpong/client-2.txt"; // input was 2, two hops
+
 
 // Create read interface
 const readInterface = readline.createInterface({
@@ -29,3 +33,5 @@ parser.start();
 // Hot potato
 // Three tier service architecture
 // Paxos, Raft, or VR
+
+// TODO: make test cases
