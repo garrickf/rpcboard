@@ -1,6 +1,13 @@
+/** timestamp.js
+ *
+ * Presents a Timestamp class that extends the JS Date class with a nanoseconds
+ * field.
+ */
+
 class Timestamp extends Date {
   constructor() {
     super();
+    this.setMilliseconds(0);
     this.nanoseconds = 0;
   }
 
@@ -18,6 +25,11 @@ class Timestamp extends Date {
       `${this.getUTCHours()}:${this.getUTCMinutes()}.${this.getUTCSeconds()}.` +
       `${this.getNanoseconds()}`
     );
+  }
+
+  // Returns a primitive that can be used for comparison
+  valueOf() {
+    return this.toNSString();
   }
 }
 
