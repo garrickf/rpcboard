@@ -18,6 +18,8 @@ const path = require("path");
 const express = require("express");
 
 const Parser = require("./parser");
+const Spanner = require("./spanner");
+const TreeGenerator = require("./treeGenerator");
 
 console.log("Starting rpcboard...\n");
 
@@ -34,14 +36,29 @@ app.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, APP_DIR, "index.html"))
 );
 
-app.get("/data/", (req, res) => res.send("I AM DATA"));
+app.get("/api/data/", (req, res) => {
+  // Alt: res.json(data);
+  res.header("Content-Type", "application/json");
+  res.sendFile(path.join(__dirname, "data", "run1.json"));
+});
 // TODO: ability to query all files in data directory? Ability to query one
 // file at a time, by name?
-
 
 app.listen(SERVE_PORT, () => {
   console.log(`Server running on http://localhost:${SERVE_PORT}/`);
   console.log(`\tGo to http://localhost:${SERVE_PORT}/ to see rpcboard.`);
+});
+
+const spanner = new Spanner();
+const treeGenerator = new TreeGenerator(spanner);
+
+treeGenerator.onTreeUpdate((tree) => {
+  console.log("Tree update:");
+  treeGenerator.prettyPrintSelf();
+
+  // TODO: rewrite JSON file to file out
+  createDataDirectory("./data");
+  writeFile("./data/run1.json", treeGenerator.toJSON());
 });
 
 // Listen for client connections on another port, these are streaming data to us
@@ -55,9 +72,10 @@ const logServer = net
 
     // Create parser around read interface
     const parser = new Parser(readInterface);
-    parser.onLogEvent((event) => {
-      console.log(event);
-    });
+    spanner.addParser(parser);
+    // parser.onLogEvent((event) => {
+    //   console.log(event);
+    // });
     parser.start();
 
     socket.addListener("connect", function () {
@@ -105,9 +123,7 @@ const writeFile = async (filename, data) => {
   }
 };
 
-createDataDirectory("./data");
-createDataDirectory("./data/run1");
-writeFile("helloworld.txt", "Hello world");
+// TODO: function that deletes data directory on start (convenience)
 
 // TODO: make server listen for stream connections, take logs and parse them
 // From logs, pull log events and construct spans

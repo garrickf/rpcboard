@@ -76,6 +76,10 @@ class TreeGenerator extends EventEmitter {
     );
   }
 
+  toJSON() {
+    return JSON.stringify(this.tree);
+  }
+
   _emitTreeUpdate() {
     this.emit(EVENT_TYPES.TREE_UPDATE, this.tree);
   }

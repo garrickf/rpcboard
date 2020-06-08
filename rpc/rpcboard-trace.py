@@ -27,7 +27,7 @@ parser.add_argument('-p', '--port',  type=int, default=7007,
 parser.add_argument('command', nargs='+', help='the command to run')
 
 args = parser.parse_args()
-print(args)
+print('(rpcboard-trace) running trace w args', args)
 command = args.command
 port = args.port
 
@@ -59,9 +59,9 @@ environ['GRPC_TRACE'] = 'http'
 
 pid = os.fork()
 if pid == 0:
-    print('i am child')
+    # print('i am child')
     # f = client_socket.makefile('w')
-    client_socket.send(b'Hellow\n')
+    # client_socket.send(b'Hellow\n')
     # for i in range(100):
     #     client_socket.send(b'')
     # sys.stderr = StreamToSocket(client_socket)
@@ -69,12 +69,14 @@ if pid == 0:
     # sys.stdout = StreamToSocket(client_socket)
     # print('Hello world')
     # Note: above doesn't work when execvp takes over
-    print(client_socket.fileno())
+    # print(client_socket.fileno())
 
     os.dup2(client_socket.fileno(), 2)
     os.execvpe(command[0], command, environ)
     os.exit(0)
 
-print('i am parent')
+# print('i am parent')
 os.waitpid(pid, 0)
+print("(rpcboard-trace) Trace completed.")
+# TODO: add case for keyboard interrupt
 exit()

@@ -27,7 +27,7 @@ class Viz extends EventEmitter {
 
     // Create a scene and set the background color
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xaaaaaa);
+    this.scene.background = new THREE.Color(0x333333);
 
     // Create a rudimentary camera
     this.camera = new THREE.PerspectiveCamera(
@@ -64,8 +64,8 @@ class Viz extends EventEmitter {
     this.graph = {
       nodes: [
         { name: "A", outlinks: ["B", "C"], position: { x: 0, y: 0 } },
-        { name: "B", outlinks: ["A"], position: { x: 50, y: 0 } },
-        { name: "C", outlinks: ["A"], position: { x: 0, y: -50 } },
+        { name: "B", outlinks: ["A"], position: { x: 40, y: 0 } },
+        { name: "C", outlinks: ["A"], position: { x: 0, y: -40 } },
       ],
       // packets: [],
       edges: [

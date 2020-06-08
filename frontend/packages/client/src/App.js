@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import Viz from "rpc-viz/src";
@@ -48,7 +48,7 @@ const VizContainer = ({ targetFramerate }) => {
         height: "100%",
       }}
     >
-      Hello I am a viz container
+      <h1>rpcboard</h1>
       <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef} />
     </div>
   );
@@ -56,9 +56,19 @@ const VizContainer = ({ targetFramerate }) => {
 
 function App() {
   // Fetch data from server:
-  fetch("/data/")
-    .then((response) => response.text())
-    .then((data) => console.log(data));
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    // Poll server every 1s
+    setInterval(() => {
+      fetch("api/data/")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          setData(data);
+        });
+    }, 1000);
+  });
 
   return (
     <div
@@ -70,6 +80,7 @@ function App() {
         height: "100vh",
       }}
     >
+      <div>{JSON.stringify(data)}</div>
       {/* <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
