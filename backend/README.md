@@ -6,7 +6,7 @@ Back end related code.
 
 First, run:
 
-```shell
+```
 npm install
 ```
 

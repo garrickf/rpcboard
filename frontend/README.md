@@ -6,7 +6,7 @@ Front end related code.
 
 To build the app, `cd` to the `/packages/client` directory and run:
 
-```shell
+```
 npm run-script build
 ```
 
@@ -16,7 +16,7 @@ This creates a production-ready build of the front end and moves it to the top l
 
 To develop using hot-reloading, run:
 
-```shell
+```
 npm start
 ```
 
