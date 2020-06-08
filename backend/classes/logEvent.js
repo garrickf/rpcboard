@@ -31,6 +31,7 @@ class LogEvent {
 
     this.role = guessedRole; // server or client (i.e. rec then send or send then rec)
     this.authority = null;
+    this.path = null;
     // this.threads = []; // Could have multiple threads (server reader)
     this.threadId = null;
     this.transportId = null; // NOTE: have only seen one transport

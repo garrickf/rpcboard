@@ -155,7 +155,7 @@ class Parser extends EventEmitter {
    * The constructor takes in a readInterface (something that emits line events)
    * and sets up any necessary bookkeeping variables.
    */
-  constructor(readInterface) {
+  constructor(readInterface, config = {verbose: false}) {
     super();
     this.readInterface = readInterface; // Store readInterface
     // TODO: initialize bookkeeping variables
@@ -163,6 +163,8 @@ class Parser extends EventEmitter {
     this.partialLogEvent = null;
     this.transportIDToLogEvent = {};
     this.threadIDToLogEvent = {};
+
+    this.config = config;
   }
 
   /** Clients call this to begin parsing. */
@@ -192,8 +194,10 @@ class Parser extends EventEmitter {
    */
   _keepReading() {
     this.readInterface.on("line", (line) => {
+      if (this.config.verbose) {
+        console.log(line);
+      }
       const [prefix, logline] = splitLine(line);
-      console.log(line);
 
       const timestamp = parseTimestamp(prefix);
       const tid = parseTID(prefix);
@@ -204,7 +208,9 @@ class Parser extends EventEmitter {
         // The next line will show whether the parsing was for server or client
         const role = parseParsingRole(logline);
         if (role === ROLES.SERVER) {
-          console.log("(parser) parsing init meta, create new logevent...");
+          if (this.config.verbose) {
+            console.log("(parser) parsing init meta, create new logevent...");
+          }
           const event = new LogEvent(ROLES.SERVER); // Guess server
           event.parsedMetadata = true;
 

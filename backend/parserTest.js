@@ -23,7 +23,7 @@ const readInterface = readline.createInterface({
   console: false,
 });
 
-const parser = new Parser(readInterface);
+const parser = new Parser(readInterface, {verbose: true});
 parser.onLogEvent((logEntry) => {
   console.log(logEntry);
 });
