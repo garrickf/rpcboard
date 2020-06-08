@@ -33,5 +33,5 @@ class Timestamp extends Date {
   }
 }
 
-// Usage: const Timestamp = require("./timestamp");
+// Usage: const Timestamp = require("./classes/timestamp");
 module.exports = Timestamp;
