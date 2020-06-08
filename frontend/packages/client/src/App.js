@@ -55,6 +55,11 @@ const VizContainer = ({ targetFramerate }) => {
 };
 
 function App() {
+  // Fetch data from server:
+  fetch("/data/")
+    .then((response) => response.text())
+    .then((data) => console.log(data));
+
   return (
     <div
       className="App"
