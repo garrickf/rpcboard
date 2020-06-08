@@ -25,13 +25,13 @@ First, start a rpcboard instance on `localhost:8080`:
 rpcboard -p 8080 -s 6006
 ```
 
-This boots up a log server that will accept streaming connections from nodes you want to monitor on port `8080` and serve the dashboard on port `6006`. Now, assuming you have a distributed application you want to profile (see `/examples` for some applications you can trace!), you can wrap the commands which start its nodes inside:
+This boots up a log server that will accept streaming connections from nodes you want to monitor on port `8080` and serve the dashboard on port `6006`. Now, assuming you have a distributed application you want to profile (see `/examples` for some applications you can trace), you can wrap the commands which start its nodes inside:
 
 ```shell
 rpcboard-trace -p 8080 [command ...]
 ```
 
-This convenience wrapper connects to the log server on port `8080`, sets necessary trace flags, then forks a child process that runs your command, with any supplied args/flags, and pipes `stderr` via sockets to the log server.
+This convenience wrapper connects to the log server on port `8080`, sets necessary trace flags, then forks a child process that runs your command, with any supplied args/flags, and pipes `stderr` via socket to the log server.
 
 Once everything's set up, you can go to `localhost:6006` to watch your distributed system go!
 
