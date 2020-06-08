@@ -37,6 +37,14 @@ class Span {
     return this.clientEvent.threadId;
   }
 
+  getAuthority() {
+    return this.clientEvent.authority;
+  }
+
+  getPath() {
+    return this.clientEvent.path;
+  }
+
   /**
    * Checks to see if a user-supplied timestamp falls between serverStart and
    * serverEnd

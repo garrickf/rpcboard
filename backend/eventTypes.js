@@ -6,6 +6,7 @@
 const EVENT_TYPES = {
   LOG_ENTRY_CREATION: "log_entry_creation",
   SPAN_CREATION: "span_creation",
+  TREE_UPDATE: "tree_update",
   // Could add error
 };
 
