@@ -19,11 +19,14 @@ import EventEmitter from "events"; // For EventEmitter
 import * as THREE from "three";
 import { circleGeometry } from "./geometry";
 import { cyanMatteMaterial, lineMaterial } from "./material";
+import { AnimationQueryTree } from "../../../../backend/classes/animationQueryTree"; // Super external (move to shared?)
 
 class Viz extends EventEmitter {
   constructor(canvas, targetFrameRate) {
     super();
-    console.log("I am a viz roar");
+
+    const a = new AnimationQueryTree();
+    console.log(a);
 
     // Create a scene and set the background color
     this.scene = new THREE.Scene();

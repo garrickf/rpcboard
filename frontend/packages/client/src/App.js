@@ -60,15 +60,20 @@ function App() {
 
   useEffect(() => {
     // Poll server every 1s
-    setInterval(() => {
+    // console.log("effect triggered")
+    setTimeout(() => {
+      // console.log("poll happens")
       fetch("api/data/")
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
+          // console.log(data);
           setData(data);
+        })
+        .catch((err) => {
+          console.log(err);
         });
-    }, 1000);
-  });
+    }, 10000);
+  }, [data]);
 
   return (
     <div
