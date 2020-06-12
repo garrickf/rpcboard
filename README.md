@@ -38,3 +38,9 @@ Once everything's set up, you can go to `localhost:6006` to watch your distribut
 ## Developing
 
 > Developed using Node v12.14.1.
+
+See the documentation for all the components, as well as guides for getting started developing.
+
+- [Frontend](./frontend)
+- [Backend](./backend)
+- [RPC](./rpc)
