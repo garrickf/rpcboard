@@ -10,6 +10,8 @@ class Span {
     // Identify client and server events
     this.clientEvent = event1.role === ROLES.CLIENT ? event1 : event2;
     this.serverEvent = event1.role === ROLES.SERVER ? event1 : event2;
+    this.clientNodeId = null;
+    this.serverNodeId = null;
   }
 
   /** Returns a Timestamp */
@@ -45,6 +47,22 @@ class Span {
     return this.clientEvent.path;
   }
 
+  getClientNodeId() {
+    return this.clientNodeId;
+  }
+
+  getServerNodeId() {
+    return this.serverNodeId;
+  }
+
+  setClientNodeId(id) {
+    this.clientNodeId = id;
+  }
+
+  setServerNodeId(id) {
+    this.serverNodeId = id;
+  }
+
   /**
    * Checks to see if a user-supplied timestamp falls between serverStart and
    * serverEnd
@@ -54,11 +72,16 @@ class Span {
   }
 
   // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#:~:text=stringify()%20method%20converts%20a,a%20replacer%20array%20is%20specified.
-  /** Serialization */
+  /** 
+   * Method which gets called when JSON serialization happens. Returns an
+   * object of only the properties we want serialized.
+   */
   toJSON() {
     return {
-      "clientEvent": this.clientEvent,
-      "serverEvent": this.serverEvent,
+      clientEvent: this.clientEvent,
+      serverEvent: this.serverEvent,
+      clientNodeId: this.clientNodeId,
+      serverNodeId: this.serverNodeId,
     };
   }
 

@@ -16,18 +16,28 @@ class Timestamp extends Date {
   }
 
   setNanoseconds(value) {
-    this.nanoseconds = value;
+    let int = parseInt(value);
+    if (int > 1e9) {
+      // Assumes someone won't set more that 1 second higher
+      int = int - 1e9;
+      this.setSeconds(this.getSeconds() + 1);
+    }
+    this.nanoseconds = int;
   }
 
   getNanoseconds() {
     return this.nanoseconds;
   }
 
+  _getNanosecondsString() {
+    return `${this.nanoseconds}`;
+  }
+
   toNSString() {
     return (
       `[${this.getFullYear()}.${this.getMonth() + 1}.${this.getDate()}]` +
       `${this.getUTCHours()}:${this.getUTCMinutes()}.${this.getUTCSeconds()}.` +
-      `${this.getNanoseconds()}`
+      `${this._getNanosecondsString().padStart(9, '0')}`
     );
   }
 
@@ -49,6 +59,7 @@ class Timestamp extends Date {
   }
 
   // Returns a primitive that can be used for comparison
+  // NOTE: comparing strings is ok because of the consistent format
   valueOf() {
     return this.toNSString();
   }
