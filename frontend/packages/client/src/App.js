@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import Viz from "rpc-viz/src";
@@ -28,16 +34,26 @@ const testData = {
   ],
 };
 
-const VizContainer = ({ targetFramerate }) => {
+const VizContainer = forwardRef(({ targetFramerate }, ref) => {
   const canvasRef = useRef();
+  const vizRef = useRef();
 
   useEffect(() => {
     console.log(canvasRef.current);
-    const viz = new Viz(canvasRef.current, targetFramerate); // Need to access current
+    vizRef.current = new Viz(canvasRef.current, targetFramerate); // Need to access current
 
+    const viz = vizRef.current;
     console.log(viz);
     viz.animate(); // Begin
   }, []); // On mount
+
+  useImperativeHandle(ref, () => ({
+    // Expose imperative methods on child component using refs.
+    setData(data_obj) {
+      const viz = vizRef.current;
+      viz.setData(data_obj);
+    },
+  }));
 
   // The width and height determine the size of the element, but not the resolution.
   // That is decided in the rpc-viz on load
@@ -52,28 +68,32 @@ const VizContainer = ({ targetFramerate }) => {
       <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef} />
     </div>
   );
-};
+});
 
 function App() {
   // Fetch data from server:
   const [data, setData] = useState(null);
+  const vizContainerRef = useRef();
 
   useEffect(() => {
     // Poll server every 1s
     // console.log("effect triggered")
-    setTimeout(() => {
+    const timer = setInterval(() => {
       // console.log("poll happens")
       fetch("api/data/")
         .then((response) => response.json())
         .then((data) => {
           // console.log(data);
+          clearInterval(timer);
           setData(data);
+          vizContainerRef.current.setData(data);
         })
         .catch((err) => {
+          // Keep retrying via setInterval
           console.log(err);
         });
-    }, 10000);
-  }, [data]);
+    }, 1000);
+  }, []); // TODO: add back in data!
 
   return (
     <div
@@ -100,7 +120,7 @@ function App() {
           Learn React
         </a>
       </header> */}
-      <VizContainer />
+      <VizContainer ref={vizContainerRef} />
     </div>
   );
 }

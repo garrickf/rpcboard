@@ -17,20 +17,32 @@
 
 import EventEmitter from "events"; // For EventEmitter
 import * as THREE from "three";
-import { circleGeometry } from "./geometry";
-import { cyanMatteMaterial, lineMaterial } from "./material";
-import { AnimationQueryTree } from "../../../../backend/classes/animationQueryTree"; // Super external (move to shared?)
+import { circleGeometry, packetGeometry } from "./geometry";
+import {
+  cyanMatteMaterial,
+  magentaMatteMaterial,
+  whiteMatteMaterial,
+  lineMaterial,
+} from "./material";
+
+// Super external (move to shared?)
+import { AnimationQueryTree } from "../../../../backend/classes/animationQueryTree";
+import {
+  hTreeFromObj,
+  timestampsFromNSStringArray,
+} from "../../../../backend/serialization";
 
 class Viz extends EventEmitter {
+  /** The constructor sets up the visualization */
   constructor(canvas, targetFrameRate) {
     super();
-
-    const a = new AnimationQueryTree();
-    console.log(a);
+    this.targetFrameRate = targetFrameRate;
+    this.currentTime = null;
+    this.animationInterval = 10000; // 10000 nanoseconds
 
     // Create a scene and set the background color
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x333333);
+    this.scene.background = new THREE.Color(0x222222);
 
     // Create a rudimentary camera
     this.camera = new THREE.PerspectiveCamera(
@@ -64,46 +76,105 @@ class Viz extends EventEmitter {
     this.uuidToNodeMesh = {};
     this.nameToNodeMesh = {};
 
-    this.graph = {
-      nodes: [
-        { name: "A", outlinks: ["B", "C"], position: { x: 0, y: 0 } },
-        { name: "B", outlinks: ["A"], position: { x: 40, y: 0 } },
-        { name: "C", outlinks: ["A"], position: { x: 0, y: -40 } },
-      ],
-      // packets: [],
-      edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "A" },
-        { from: "A", to: "C" },
-        { from: "C", to: "A" },
-      ],
-    };
+    this.graph = {};
+
+    this.packetMetadata = {};
+
+    // Old example graph
+    // this.graph = {
+    //   nodes: [
+    //     { name: "A", outlinks: ["B", "C"], position: { x: 0, y: 0 } },
+    //     { name: "B", outlinks: ["A"], position: { x: 40, y: 0 } },
+    //     { name: "C", outlinks: ["A"], position: { x: 0, y: -40 } },
+    //   ],
+    //   // packets: [],
+    //   edges: [
+    //     { from: "A", to: "B" },
+    //     { from: "B", to: "A" },
+    //     { from: "A", to: "C" },
+    //     { from: "C", to: "A" },
+    //   ],
+    // };
 
     // Draw the graph
-    this.addGraphNodes();
-    this.addGraphEdges();
-    // console.log(this.uuidToNodeMesh);
-    // console.log(this.nameToNodeMesh);
+    this._addGraphNodes();
+    this._addGraphEdges();
 
-    // var material = lineMaterial;
-
-    // var points = [];
-    // points.push(new THREE.Vector3(-10, 0, 0));
-    // points.push(new THREE.Vector3(0, 10, 0));
-
-    // var geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-    // var line = new THREE.Line(geometry, material);
-    // this.scene.add(line);
+    // Bookkeeping structures
+    this.nodeMetadata = {};
 
     // Note: how to add ambient lighting...
     // this.scene.add(new THREE.AmbientLight(0xffffff));
   }
 
+  // TODO: provide method to set information
+
+  // TODO: create hooks for information
+  // get ns of frame (?)
+  // reset positions of nodes
+  // rename a node
+
+  /** setData is called with the data object ingested from the backend */
+  setData(data_obj) {
+    console.log("(rpc-viz) setData called");
+    this.graph = data_obj.graph; // Adjacency list format
+    this.nodeIdToNameMap = data_obj.nodeIdToNameMap;
+
+    // Generate position and nicknames for new nodes
+    this._generateNodeMetadata();
+
+    // Redraw
+    this._addGraphNodes();
+    this._addGraphEdges();
+
+    // Build animationQueryTree using hTree_obj and timestamps
+    const hTree = hTreeFromObj(data_obj.hTree_obj);
+    const timestamps = timestampsFromNSStringArray(data_obj.timestamps);
+    // TODO: deserialize timestamps
+    this.animationQueryTree = new AnimationQueryTree(3, hTree, timestamps);
+
+    if (this.currentTime === null) {
+      this.currentTime = this.animationQueryTree.rangeStart();
+    }
+  }
+
+  /** Identifies which pieces of data are new (based on id) and creates metadata */
+  _generateNodeMetadata() {
+    Object.keys(this.nodeIdToNameMap).forEach((key) => {
+      // If not in metadata map, create visualization-specific metadata for it
+      if (!this.nodeMetadata.hasOwnProperty(key)) {
+        this.nodeMetadata[key] = {
+          position: this._generateRandomPosition(),
+          nickname: null,
+        };
+      }
+    });
+  }
+
+  _generateRandomPosition() {
+    const max = 40;
+    const randomX = Math.floor(Math.random() * max * 2 - max);
+    const randomY = Math.floor(Math.random() * max * 2 - max);
+    return {
+      x: randomX,
+      y: randomY,
+    };
+  }
+
+  /** Returns object containing name and nickname (if previously set) */
+  _getNameForNodeId(nodeId) {
+    const name = this.nodeIdToNameMap[nodeId];
+    const nickname = this.nodeMetadata[nodeId].nickname;
+    return {
+      name,
+      nickname,
+    };
+  }
+
   /**
    * Adds graph node meshes
    */
-  addGraphNodes() {
+  _addGraphNodes() {
     // var material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
     // this.cube = new THREE.Mesh(circleGeometry, cyanMatteMaterial);
 
@@ -112,16 +183,33 @@ class Viz extends EventEmitter {
     // this.scene.add(this.cube);
     // this.scene.add(other);
 
-    this.graph.nodes.forEach(({ name, outlinks, position }) => {
-      const nodeMesh = new THREE.Mesh(circleGeometry, cyanMatteMaterial);
+    // outlinks: connections to other nodes
+    Object.keys(this.graph).forEach((key) => {
+      // Fetch metadata
+      const outlinks = this.graph[key];
+      const position = this.nodeMetadata[key].position;
+
+      if (!this.nodeMetadata[key].hasOwnProperty("mesh")) {
+        this.nodeMetadata[key].mesh = new THREE.Mesh(
+          circleGeometry,
+          cyanMatteMaterial
+        );
+      }
+      const nodeMesh = this.nodeMetadata[key].mesh;
+      nodeMesh.material = cyanMatteMaterial; // Reset color
+
+      // Update position if needed
       nodeMesh.position.x = position.x;
       nodeMesh.position.y = position.y;
       nodeMesh.userData = {
+        // User data contains information we can access later when directly
+        // accessing the drawn object
         name,
         outlinks,
       };
       // Add to our scene graph
       this.scene.add(nodeMesh);
+      // console.log(nodeMesh);
 
       // Record the nodeMesh in lookup structures for convenience
       this.uuidToNodeMesh[nodeMesh.uuid] = nodeMesh;
@@ -129,41 +217,43 @@ class Viz extends EventEmitter {
     });
   }
 
+  // TODO: create proper edd edges method (are all the edges provided??)
+  // Need to lift from the adjacency list map
+
   /**
    * Add graph line meshes
    */
-  addGraphEdges() {
-    this.graph.edges.forEach(({ from, to }) => {
-      const points = [];
-      points.push(
-        new THREE.Vector3(
-          this.nameToNodeMesh[from].position.x,
-          this.nameToNodeMesh[from].position.y,
-          0
-        )
-      );
-      points.push(
-        new THREE.Vector3(
-          this.nameToNodeMesh[to].position.x,
-          this.nameToNodeMesh[to].position.y,
-          0
-        )
-      );
-      console.log(points);
+  _addGraphEdges() {
+    // TODO: keep track of edgeMesh, so we don't overdraw them. Need a double map
+    Object.keys(this.graph).forEach((key) => {
+      const fromId = key;
+      const fromNode = this.nodeMetadata[fromId];
+      this.graph[key].forEach((toId) => {
+        const toNode = this.nodeMetadata[toId];
 
-      // Reference: https://threejs.org/docs/#manual/en/introduction/Drawing-lines
-      const edgeGeometry = new THREE.BufferGeometry().setFromPoints(points);
-      const edgeMesh = new THREE.Line(edgeGeometry, lineMaterial); // `Line` important :(
-
-      // Add to our scene graph
-      this.scene.add(edgeMesh);
-      console.log(edgeMesh);
+        // Create an edge between from and to
+        const points = [];
+        points.push(
+          new THREE.Vector3(fromNode.position.x, fromNode.position.y, 0)
+        );
+        points.push(new THREE.Vector3(toNode.position.x, toNode.position.y, 0));
+        // console.log(points);
+        // Reference: https://threejs.org/docs/#manual/en/introduction/Drawing-lines
+        const edgeGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const edgeMesh = new THREE.Line(edgeGeometry, lineMaterial); // `Line` important :(
+        // Add to our scene graph
+        this.scene.add(edgeMesh);
+        // console.log(edgeMesh);
+      });
     });
   }
 
-  // TODO: implement events and handles
+  /**
+   * Tells the browser we wish to perform an animation. Calls _animate callback
+   * before repaint.
+   */
   requestAnimationFrame() {
-    requestAnimationFrame(this.animate.bind(this));
+    requestAnimationFrame(() => this.animate());
   }
 
   // animate (time) {
@@ -187,10 +277,94 @@ class Viz extends EventEmitter {
    */
   animate() {
     this.requestAnimationFrame();
-    // this.cube.rotation.x += 0.01;
-    // this.cube.rotation.y += 0.01;
-    this.resizeRendererToDisplaySize(); // TODO: move out, only put in render
-    this.renderer.render(this.scene, this.camera);
+    this.resizeRendererToDisplaySize();
+
+    if (this.currentTime === null) {
+      return this.renderer.render(this.scene, this.camera);
+    }
+
+    // Create a new timestamp to query the AQT given the current timestamp
+    this.currentTime.setNanoseconds(
+      this.currentTime.getNanoseconds() + this.animationInterval
+    );
+
+    // Reset/redraw graph
+    this._addGraphNodes();
+    this._addGraphEdges();
+
+    if (this.animationQueryTree.rangeEnd() < this.currentTime) {
+      return;
+    }
+
+    // Get animation information
+    const animationInfoArray = this.animationQueryTree.queryPoint(
+      this.currentTime
+    );
+
+    const newPackets = {};
+
+    // Process animation events
+    animationInfoArray.forEach((animationInfo) => {
+      // TODO: import constants
+      if (animationInfo.event === "client_processing") {
+        const { nodeId } = animationInfo.metadata;
+        const mesh = this.nodeMetadata[nodeId].mesh;
+        mesh.material = magentaMatteMaterial;
+      }
+      if (animationInfo.event === "communicating") {
+        const { fromNodeId, toNodeId } = animationInfo.metadata;
+        const key = `${fromNodeId}${toNodeId}`;
+
+        let packetMesh = null;
+        if (!this.packetMetadata.hasOwnProperty(key)) {
+          const newMesh = new THREE.Mesh(packetGeometry, whiteMatteMaterial);
+          newPackets[key] = newMesh;
+          this.scene.add(newMesh);
+          packetMesh = newMesh;
+        } else {
+          packetMesh = this.packetMetadata[key];
+        }
+
+        const fromNodePosition = this.nodeMetadata[fromNodeId].position;
+        const toNodePosition = this.nodeMetadata[toNodeId].position;
+        const percentDone = this._computePercentComplete(
+          animationInfo.rangeStart,
+          animationInfo.rangeEnd
+        );
+        const packetY =
+          (toNodePosition.y - fromNodePosition.y) * percentDone +
+          fromNodePosition.y;
+        const packetX =
+          (toNodePosition.x - fromNodePosition.x) * percentDone +
+          fromNodePosition.x;
+        const position = {
+          x: packetX,
+          y: packetY,
+        };
+        packetMesh.position.x = position.x;
+        packetMesh.position.y = position.y;
+      }
+    });
+
+    // Clean up old packet meshes 
+    Object.keys(this.packetMetadata).forEach((key) => {
+      if (!newPackets.hasOwnProperty(key)) {
+        // Remove mesh
+        this.scene.remove(this.packetMetadata[key]);
+      }
+    });
+    this.packetMetadata = newPackets;
+
+    return this.renderer.render(this.scene, this.camera);
+  }
+
+  _computePercentComplete(start, end) {
+    const ns_diff = this.currentTime.getNanoseconds() - start.getNanoseconds()
+    const ns_range =  end.getNanoseconds() - start.getNanoseconds()
+    const time_diff_sec = (this.currentTime.getTime() - start.getTime()) / 1000;
+    const time_range_sec = (end.getTime() - start.getTime()) / 1000;
+    const percent = (time_diff_sec + ns_diff / 1e9) / (time_range_sec + ns_range / 1e9);
+    return percent;
   }
 
   /**
@@ -200,7 +374,7 @@ class Viz extends EventEmitter {
   /**
    * Perform tween animations; resize the canvas if needed
    */
-  render(time) {
+  _render(time) {
     TWEEN.update();
 
     this.resizeRendererToDisplaySize();
