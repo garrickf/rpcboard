@@ -11,6 +11,7 @@
 // timestamp
 
 const EventEmitter = require("events").EventEmitter;
+const { v4: uuidv4 } = require("uuid");
 
 const TreeNode = require("./classes/treeNode");
 const { EVENT_TYPES } = require("./eventTypes");
@@ -21,6 +22,12 @@ class TreeGenerator extends EventEmitter {
     super();
     this.tree = null; // TODO: make n-ary tree node
     this.allSpans = [];
+    this.timestamps = [];
+    this.threadIdToAuthorityMap = {};
+    this.authorityToNodeIdMap = {
+      outside: uuidv4(),
+    };
+    this.threadIdEdges = [];
     this.spanner = spanner;
 
     this.spanner.onSpanCreation((span) => this._handleSpanCreation(span));
@@ -45,7 +52,9 @@ class TreeGenerator extends EventEmitter {
     const span = treeNode.getSpan();
     console.log(`${indent}span: ${span ? "" : "(root)"}`);
     if (!!span) this._prettyPrintSpan(span, indentLevel);
-    console.log(`${indent}children: ${treeNode.getChildren().length ? "" : "(none)"}`);
+    console.log(
+      `${indent}children: ${treeNode.getChildren().length ? "" : "(none)"}`
+    );
     treeNode.getChildren().forEach((childNode) => {
       this._prettyPrint(childNode, indentLevel + 1);
     });
@@ -76,16 +85,45 @@ class TreeGenerator extends EventEmitter {
     );
   }
 
-  toJSON() {
-    return JSON.stringify(this.tree);
+  /** Dumps hTree_obj and other data structures needed for visualization */
+  dumpJSON() {
+    const hTree = this.tree;
+    const timestamps = this._buildSortedUniqueTimestamps();
+    const nodeIdToNameMap = this._buildNodeIdToNameMap();
+    const graph = this._buildNodeIdGraph();
+
+    return JSON.stringify({
+      hTree_obj: hTree,
+      timestamps,
+      nodeIdToNameMap,
+      graph,
+    });
   }
 
   _emitTreeUpdate() {
     this.emit(EVENT_TYPES.TREE_UPDATE, this.tree);
   }
 
-  /** Internal helper that  */
+  /** Internal helper that reacts to creation of a span */
   _handleSpanCreation(span) {
+    // Record span timestamps
+    this.timestamps.push(span.getStart());
+    this.timestamps.push(span.getEnd());
+    this.timestamps.push(span.getServerStart());
+    this.timestamps.push(span.getServerEnd());
+
+    // Add clientId -> serverId
+    // Edges are bi-directional, so it's okay to just pass one of the connections
+    this.threadIdEdges.push([
+      span.getClientThreadId(),
+      span.getServerThreadId(),
+    ]);
+
+    this.threadIdToAuthorityMap[span.getServerThreadId()] = span.getAuthority();
+    if (!this.authorityToNodeIdMap.hasOwnProperty(span.getAuthority())) {
+      this.authorityToNodeIdMap[span.getAuthority()] = uuidv4();
+    }
+
     this.allSpans.push(span);
     this._updateTree();
     this._emitTreeUpdate();
@@ -115,6 +153,10 @@ class TreeGenerator extends EventEmitter {
     this.tree = new TreeNode();
 
     this.allSpans.forEach((span) => {
+      // Assign id to span based on latest information. This is used for animation
+      span.setClientNodeId(this._lookupNodeId(span.getClientThreadId()));
+      span.setServerNodeId(this._lookupNodeId(span.getServerThreadId()));
+
       if (this.tree.children.length === 0) {
         // If no children, just add to root node
         this.tree.addChild(new TreeNode(span));
@@ -200,6 +242,64 @@ class TreeGenerator extends EventEmitter {
       candidateSpan.hasTimestampInServerRange(span.getEnd());
 
     return clientCallInBounds;
+  }
+
+  // more helper functions (could be decomposed...)
+  _buildNodeIdToNameMap() {
+    const nodeIdToNameMap = {};
+
+    // Reverse keys and values
+    Object.keys(this.authorityToNodeIdMap).forEach((key) => {
+      nodeIdToNameMap[this.authorityToNodeIdMap[key]] = key;
+    });
+
+    return nodeIdToNameMap;
+  }
+
+  /** Assembles the edges, stored by TID->TID, as an adjacency list of node ids */
+  _buildNodeIdGraph() {
+    const graph = {};
+    this.threadIdEdges.map(([clientThreadId, serverThreadId]) => {
+      const clientNodeId = this._lookupNodeId(clientThreadId);
+      const serverNodeId = this._lookupNodeId(serverThreadId);
+
+      if (!graph.hasOwnProperty(clientNodeId)) {
+        graph[clientNodeId] = [];
+      }
+
+      graph[clientNodeId].push(serverNodeId);
+    });
+
+    return graph;
+  }
+
+  _lookupNodeId(threadId) {
+    if (!this.threadIdToAuthorityMap.hasOwnProperty(threadId)) {
+      // Thread request came from somewhere not in system
+      return this.authorityToNodeIdMap["outside"];
+    } else {
+      const authority = this.threadIdToAuthorityMap[threadId];
+      const nodeId = this.authorityToNodeIdMap[authority];
+      return nodeId;
+    }
+  }
+
+  _buildSortedUniqueTimestamps() {
+    // Sort and return unique list
+    this.timestamps.sort((a, b) => {
+      if (a < b) return -1;
+      if (a > b) return 1;
+      return 0;
+    });
+    const uniqueTimestamps = [];
+    this.timestamps.forEach((timestamp) => {
+      if (!uniqueTimestamps.includes(timestamp)) {
+        uniqueTimestamps.push(timestamp);
+      }
+    });
+
+    this.timestamps = uniqueTimestamps;
+    return uniqueTimestamps;
   }
 }
 

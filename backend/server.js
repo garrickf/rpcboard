@@ -52,13 +52,14 @@ app.listen(SERVE_PORT, () => {
 const spanner = new Spanner();
 const treeGenerator = new TreeGenerator(spanner);
 
+// On treeUpdates, dump JSON information into a file
 treeGenerator.onTreeUpdate((tree) => {
   console.log("Tree update:");
   treeGenerator.prettyPrintSelf();
 
   // TODO: rewrite JSON file to file out
   createDataDirectory("./data");
-  writeFile("./data/run1.json", treeGenerator.toJSON());
+  writeFile("./data/run1.json", treeGenerator.dumpJSON());
 });
 
 // Listen for client connections on another port, these are streaming data to us
@@ -73,24 +74,16 @@ const logServer = net
     // Create parser around read interface
     const parser = new Parser(readInterface);
     spanner.addParser(parser);
-    // parser.onLogEvent((event) => {
-    //   console.log(event);
-    // });
     parser.start();
 
     socket.addListener("connect", function () {
       console.log("Client connected: " + this.remoteAddress);
     });
-
-    // TODO: add parser to a combined utility that cross-references and combines
-    // log events into spans
   })
   .on("error", (err) => {
-    // Handle errors here.
     throw err;
   });
 
-// Grab an arbitrary unused port.
 const PORT = 7007;
 logServer.listen(PORT, () => {
   console.log(`Now accepting log connections on http://localhost:${PORT}/`);

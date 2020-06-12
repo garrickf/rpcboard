@@ -36,10 +36,14 @@ TEST_FILES.forEach((test_file) => {
 
 treeGenerator = new TreeGenerator(spanner);
 treeGenerator.onTreeUpdate((tree) => {
+  console.log("update!")
   treeGenerator.prettyPrintSelf();
-  console.log(JSON.stringify(treeGenerator.tree)); // Debug serialization
-  // Debug resuscitation
-  const newTree = treeFromJSON(JSON.stringify(treeGenerator.tree))
-  treeGenerator._prettyPrint(newTree, 0);
+  // console.log(JSON.stringify(treeGenerator.tree)); // Debug serialization
+  // // Debug resuscitation
+  // const newTree = treeFromJSON(JSON.stringify(treeGenerator.tree))
+  // treeGenerator._prettyPrint(newTree, 0);
+
+  const json_dump = treeGenerator.dumpJSON();
+  console.log(json_dump);
 });
 treeGenerator.start();
