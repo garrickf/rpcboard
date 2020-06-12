@@ -5,6 +5,8 @@ time, from client/server logs.
 
 > This project was developed for CS244B: Distributed Systems, Spring 2020.
 
+> Looking for the project at the time of submission? Check out commit hash [68cd222](https://github.com/garrickf/rpcboard/tree/68cd22223eb8e36da9ffea9f359623e52da0881e).
+
 ## Usage
 
 ### Adding symlinks to PATH
